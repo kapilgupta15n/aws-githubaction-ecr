@@ -43,18 +43,18 @@ jobs:
             if: inputs.ACTION == 'PLAN'
             id: plan
             run: |
-             terraform init -reconfigure -backend-config="bucket=s3-terraform-bucket-kapil" -bucket-config="key=ecr/admin.tfvars"
+             terraform init -reconfigure -backend-config="bucket=s3-terraform-bucket-kapil" -backend-config="key=ecr/admin.tfvars"
              terraform plan -out=tfplan
              
           - name: terraform apply
             if: inputs.ACTION == 'APPLY'
             run: |
-              terraform init -reconfigure -backend-config="bucket=s3-terraform-bucket-kapil" -bucket-config="key=ecr/admin.tfvars"
+              terraform init -reconfigure -backend-config="bucket=s3-terraform-bucket-kapil" -backend-config="key=ecr/admin.tfvars"
               terraform plan -out=tfplan
               terraform apply "tfplan"
               
           - name: terraform Destroy
             if: inputs.ACTION == 'DESTROY'
             run: |
-              terraform init -reconfigure -backend-config="bucket=s3-terraform-bucket-kapil" -bucket-config="key=ecr/admin.tfvars"
+              terraform init -reconfigure -backend-config="bucket=s3-terraform-bucket-kapil" -backend-config="key=ecr/admin.tfvars"
               terraform destroy -auto-approve

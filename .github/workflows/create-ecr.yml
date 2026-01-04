@@ -1,0 +1,62 @@
+name: Create-ECR
+on:
+  workflow_dispatch:
+    inputs:
+		  ACTION:
+        required: true
+        description: Select your Action
+        type: choice
+        options:
+          - PLAN
+          - APPLY
+          - DESTROY                 
+permissions:
+    id-token: write
+    contents: read
+jobs:
+    Create-ECR:
+	    name: Create-ECR               
+      runs-on: ubuntu-latest        
+      steps:
+          - name: Git Checkout
+            uses: actions/checkout@v3
+	          with:
+	      	    repository: ${{github.repository}}
+	      	    ref: ${{github.head_ref}}
+
+            # get aws credentials
+          - name: Get AWS Credentials
+            id: aws-credentials
+            uses: aws-actions/configure-aws-credentials@v2
+            with:
+              role-to-assume: "${{secrets.GITHUB_ACTION}}"
+              aws-region: us-east-1
+		          ROLE-SESSION-NAME: ecr-create
+				
+          - name: print assume role 
+            run: aws sts get-caller-identity
+
+	        - name: setup terraform
+            uses: hashicorp/setup-terraform@v2
+            with:
+              cli_config_credentials_token: ${{secrets.TF_API_TOKEN}}
+
+          - name: terraform plan
+	          if: inputs.ACTION == 'PLAN'
+	          id: plan
+            run: |
+		          terraform init -reconfigure -backend-config="bucket=s3-terraform-bucket-kapil" -bucket-config="key=ecr/admin.tfvars"
+		          terraform plan -out=tfplan
+
+	        - name: terraform apply
+	          if: inputs.ACTION == 'APPLY'
+            run: |
+		          terraform init -reconfigure -backend-config="bucket=s3-terraform-bucket-kapil" -bucket-config="key=ecr/admin.tfvars"
+		          terraform plan -out=tfplan
+		          terraform apply "tfplan" 
+
+	        - name: terraform Destroy
+	          if: inputs.ACTION == 'DESTROY'
+            run: |
+		          terraform init -reconfigure -backend-config="bucket=s3-terraform-bucket-kapil" -bucket-config="key=ecr/admin.tfvars"
+		          terraform destroy -auto-approve

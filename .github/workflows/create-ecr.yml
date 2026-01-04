@@ -31,8 +31,7 @@ jobs:
             with:
               role-to-assume: "${{secrets.GITHUB_ACTION}}"
               aws-region: us-east-1
-              role-session-name: ecr-create
-				
+              # role-session-name: ecr-create				
           - name: print assume role 
             run: aws sts get-caller-identity
           - name: setup terraform
